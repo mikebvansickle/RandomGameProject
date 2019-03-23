@@ -239,6 +239,10 @@ namespace ConsoleGame
             }
             return trackedCoords;
         }
+        public static double GetDistance(int xPlayer, int yPlayer, int xCoord, int yCoord)
+        {
+            return Math.Sqrt(Math.Pow(xPlayer - xCoord, 2) + Math.Pow(yPlayer - yCoord, 2));
+        }
         public static void UpdateGridValues(int[][] grid, List<Coords> trackedCoords, Track.Point Player)
         {
             int xPlayer = Player.xTrack / 2 - 1;
@@ -269,50 +273,6 @@ namespace ConsoleGame
             //
             //}
 
-            //Prints radially based on closest point to Player Coords
-            List<Coords> orderedList = new List<Coords>();
-            double distanceMin = 99999;
-            int distanceMinIndex = 0;
-            while(trackedCoords.Count > 0)
-            {
-                distanceMin = 99999;
-                for (int i = 0; i < trackedCoords.Count; ++i)
-                {
-                    double x = trackedCoords[i].x - xPlayer;
-                    double y = trackedCoords[i].y - yPlayer;
-                    x = Math.Pow(x, 2);
-                    y = Math.Pow(y, 2);
-                    double numToSquare = x + y;
-                    double dist = Math.Sqrt(numToSquare);
-                     if(dist < distanceMin)
-                    {
-                        distanceMin = dist;
-                        distanceMinIndex = i;
-                    }
-                }
-                int xc = trackedCoords[distanceMinIndex].x;
-                int yc = trackedCoords[distanceMinIndex].y;
-                orderedList.Add(trackedCoords[distanceMinIndex]);
-                trackedCoords.RemoveAt(distanceMinIndex);
-            }
-            for(int i = 0; i < orderedList.Count; ++i)
-            {
-                grid[orderedList[i].x][orderedList[i].y] = newGridVal;
-                Console.SetCursorPosition((orderedList[i].x + 1) * 2, orderedList[i].y + 1);
-                Console.SetWindowPosition(0, 0);
-                Console.Write(newVal);
-                Thread.Sleep(2);
-            }
-            //foreach(Coords set in orderedList)
-            //{
-            //    grid[set.x][set.y] = newGridVal;
-            //    Console.SetCursorPosition((set.x + 1) * 2, set.y + 1);
-            //    Console.SetWindowPosition(0, 0);
-            //    Console.Write(newVal);
-            //    Console.SetCursorPosition(0, 25);
-            //    Console.Write("xPlayer: " + xPlayer + ", yPlayer: " + yPlayer + "                           ");
-            //    Thread.Sleep(15);
-            //}
 
             //Prints procedurally in the order the nodes were collected
             //foreach(Coords set in trackedCoords)
@@ -323,6 +283,65 @@ namespace ConsoleGame
             //    Console.Write(newVal);
             //    Thread.Sleep(15);
             //}
+
+            //Prints radially based on closest point to Player Coords
+            //Simple Insertion sort method -> O(n^2)
+            for (int i = 0; i < trackedCoords.Count - 1; ++i)
+            {
+                for(int j = i + 1; j > 0; --j)
+                {
+                    double distA = GetDistance(xPlayer, yPlayer, trackedCoords[j].x, trackedCoords[j].y);
+                    double distB = GetDistance(xPlayer, yPlayer, trackedCoords[j - 1].x, trackedCoords[j - 1].y);
+                    if(distB > distA)
+                    {
+                        Coords temp = new Coords(trackedCoords[j - 1].x, trackedCoords[j - 1].y);
+                        trackedCoords[j - 1] = trackedCoords[j];
+                        trackedCoords[j] = temp;
+                    }
+                }
+            }
+            for (int i = 0; i < trackedCoords.Count; ++i)
+            {
+                grid[trackedCoords[i].x][trackedCoords[i].y] = newGridVal;
+                Console.SetCursorPosition((trackedCoords[i].x + 1) * 2, trackedCoords[i].y + 1);
+                Console.SetWindowPosition(0, 0);
+                Console.Write(newVal);
+                Thread.Sleep(2);
+            }
+
+            //Poorly optimized radial version
+            //List<Coords> orderedList = new List<Coords>();
+            //double distanceMin = 99999;
+            //int distanceMinIndex = 0;
+            //while(trackedCoords.Count > 0)
+            //{
+            //    distanceMin = 99999;
+            //    for (int i = 0; i < trackedCoords.Count; ++i)
+            //    {
+            //        double x = trackedCoords[i].x - xPlayer;
+            //        double y = trackedCoords[i].y - yPlayer;
+            //        x = Math.Pow(x, 2);
+            //        y = Math.Pow(y, 2);
+            //        double numToSquare = x + y;
+            //        double dist = Math.Sqrt(numToSquare);
+            //         if(dist < distanceMin)
+            //        {
+            //            distanceMin = dist;
+            //            distanceMinIndex = i;
+            //        }
+            //    }
+            //    orderedList.Add(trackedCoords[distanceMinIndex]);
+            //    trackedCoords.RemoveAt(distanceMinIndex);
+            //}
+            //for(int i = 0; i < orderedList.Count; ++i)
+            //{
+            //    grid[orderedList[i].x][orderedList[i].y] = newGridVal;
+            //    Console.SetCursorPosition((orderedList[i].x + 1) * 2, orderedList[i].y + 1);
+            //    Console.SetWindowPosition(0, 0);
+            //    Console.Write(newVal);
+            //    Thread.Sleep(2);
+            //}
+
         }
     }
 }
